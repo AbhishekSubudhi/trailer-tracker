@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Order View — FleetView</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body data-page="orders">
+<header id="topbar"></header>
+<div class="app-shell">
+<nav id="sidebar-nav"></nav>
+
+<main id="main">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Orders View</h1>
+      <div class="page-sub">New order queue · AI-assisted trailer recommendations</div>
+    </div>
+    <div id="date-slicer"></div>
+  </div>
+
+  <div class="kpi-row kpi-row-5" id="orders-kpi-row"></div>
+
+  <div class="panel">
+    <div class="toolbar">
+      <div class="search-box">
+        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        <input id="search-input" type="text" placeholder="Search Order ID" autocomplete="off">
+      </div>
+      <select class="select" id="filter-type">
+        <option value="">All Types</option>
+      </select>
+      <select class="select" id="filter-destination">
+        <option value="">All Destinations</option>
+      </select>
+      <button class="chip-toggle" id="filter-review">Needs review only</button>
+      <span class="spacer"></span>
+      <button class="btn-reset" id="btn-reset">Reset filters</button>
+      <button class="btn-reset" id="btn-scoring-info" title="How recommendations are scored">How scoring works</button>
+    </div>
+
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr id="thead-row"></tr>
+        </thead>
+        <tbody id="table-body"></tbody>
+      </table>
+    </div>
+
+    <div class="pagination">
+      <div id="pagination-info"></div>
+      <div class="pagination-btns" id="pagination-btns"></div>
+    </div>
+  </div>
+</main>
+</div>
+
+<div class="modal-backdrop" id="scoring-modal">
+  <div class="modal-card">
+    <div class="modal-header">
+      <div class="panel-title">How trailer recommendations are scored</div>
+      <button class="modal-close" id="scoring-modal-close">&times;</button>
+    </div>
+    <div class="modal-body" id="scoring-modal-body"></div>
+  </div>
+</div>
+
+<script src="assets/data.js"></script>
+<script src="assets/recommendations.js"></script>
+<script src="assets/app.js"></script>
+<script src="assets/orders.js"></script>
+</body>
+</html>

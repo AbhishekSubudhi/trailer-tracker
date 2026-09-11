@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Summary — FleetView</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body data-page="summary">
+<header id="topbar"></header>
+<div class="app-shell">
+<nav id="sidebar-nav"></nav>
+
+<main id="main">
+  <div class="hero-banner">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <div>
+        <h1 class="page-title">Fleet Summary</h1>
+        <div class="page-sub">Noida yard · real-time trailer operations overview</div>
+      </div>
+      <div class="hero-stats" id="hero-stats"></div>
+    </div>
+  </div>
+
+  <div id="alert-slot"></div>
+
+  <div class="kpi-row" id="kpi-row"></div>
+
+  <div class="content-grid">
+    <div class="panel" id="order-summary-panel"></div>
+    <div class="panel map-wrap" id="map-panel"></div>
+  </div>
+
+  <div class="bottom-grid">
+    <div class="panel" id="delayed-panel"></div>
+    <div class="panel" id="fleet-mix-panel"></div>
+    <div class="panel" id="performance-panel"></div>
+  </div>
+</main>
+</div>
+
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="assets/summary.js"></script>
+</body>
+</html>
