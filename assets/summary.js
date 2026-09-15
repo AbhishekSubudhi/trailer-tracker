@@ -95,6 +95,10 @@ function renderKpiRow() {
 }
 
 // -------------------- Order summary (new orders pool) --------------------
+// Framed around what a fleet manager actually needs to triage the incoming
+// queue: how urgent it is, how much needs a human look, and — the key
+// operational question — whether there's enough of the right trailer type
+// sitting idle right now to actually cover this demand.
 function renderOrderSummary() {
   const panel = document.getElementById("order-summary-panel");
   const total = ORDERS.length;
@@ -103,43 +107,44 @@ function renderOrderSummary() {
   const byDest = countBy(ORDERS, o => o.destination);
   const totalWeight = ORDERS.reduce((s, o) => s + o.weight, 0);
   const avgDistance = Math.round(ORDERS.reduce((s, o) => s + o.distance, 0) / total);
-  const topDest = Object.entries(byDest).sort((a, b) => b[1] - a[1]);
-  const priorityColors = { P1: "#dc2626", P2: "#e08c1a", P3: "#16a34a" };
+  const topDest = Object.entries(byDest).sort((a, b) => b[1] - a[1]).slice(0, 3);
+
+  const REVIEW_THRESHOLD = 80;
+  const recs = typeof ORDER_RECOMMENDATIONS !== "undefined" ? ORDER_RECOMMENDATIONS : null;
+  const needsReview = recs
+    ? ORDERS.filter(o => { const r = recs[o.id] || []; return r.length === 0 || r[0].accuracy < REVIEW_THRESHOLD; }).length
+    : null;
+
+  const availByType = countBy(TRAILERS.filter(t => t.status === "Available"), t => t.type);
+  const types = Object.keys(byType).sort((a, b) => byType[b] - byType[a]);
 
   panel.innerHTML = `
     <div class="panel-title-row">
       <div class="panel-title">New Order Summary</div>
-      <span class="badge" style="background:#eef2ff;color:#4338ca;border-color:#c7d2fe">${total} orders</span>
+      <a href="orders.html" class="link" style="font-size:12px">View all →</a>
     </div>
     <div class="panel-body">
+      <div class="stat-line"><span>Urgent (P1)</span><span class="n" style="color:#c22a2a">${fmtNum(byPriority.P1 || 0)}</span></div>
+      ${needsReview !== null ? `<div class="stat-line"><span>Needs manual review</span><span class="n" style="color:#a5670a">${fmtNum(needsReview)}</span></div>` : ""}
       <div class="stat-line"><span>Total weight (pool)</span><span class="n">${fmtNum(totalWeight)} kg</span></div>
       <div class="stat-line"><span>Avg. distance</span><span class="n">${fmtNum(avgDistance)} km</span></div>
       <div class="stat-line"><span>Unique destinations</span><span class="n">${Object.keys(byDest).length}</span></div>
 
-      <div style="margin-top:14px;font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:var(--text-muted)">By priority</div>
-      <div class="mini-bars" style="margin-top:8px">
-        ${["P1", "P2", "P3"].map(p => {
-          const c = byPriority[p] || 0;
-          const pct = Math.round((c / total) * 100);
-          return `<div class="mini-bar-row">
-            <div class="mini-bar-label"><span>${p} ${p === "P1" ? "(urgent)" : p === "P2" ? "(standard)" : "(flexible)"}</span><span>${c}</span></div>
-            <div class="mini-bar-track"><div class="mini-bar-fill" style="width:${pct}%;background:${priorityColors[p]}"></div></div>
+      <div style="margin-top:16px;font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:var(--text-muted)">Trailer availability vs demand</div>
+      <div style="margin-top:2px;font-size:10.5px;color:var(--text-faint)">Idle in the yard right now vs. orders needing that type</div>
+      <div class="coverage-list" style="margin-top:8px">
+        ${types.map(type => {
+          const needed = byType[type];
+          const avail = availByType[type] || 0;
+          return `<div class="coverage-row">
+            <span class="coverage-type">${type}</span>
+            <span class="coverage-mid">${needed} orders</span>
+            <span class="coverage-avail ${avail === 0 ? "critical" : ""}">${avail} available now</span>
           </div>`;
         }).join("")}
       </div>
 
-      <div style="margin-top:16px;font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:var(--text-muted)">By trailer type needed</div>
-      <div class="mini-bars" style="margin-top:8px">
-        ${Object.entries(byType).map(([type, c]) => {
-          const pct = Math.round((c / total) * 100);
-          return `<div class="mini-bar-row">
-            <div class="mini-bar-label"><span>${type}</span><span>${c}</span></div>
-            <div class="mini-bar-track"><div class="mini-bar-fill" style="width:${pct}%;background:var(--accent)"></div></div>
-          </div>`;
-        }).join("")}
-      </div>
-
-      <div style="margin-top:16px;font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:var(--text-muted)">Top destinations</div>
+      <div style="margin-top:16px;font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:var(--text-muted)">Top 3 destinations</div>
       <div style="margin-top:6px">
         ${topDest.map(([city, c]) => `<div class="stat-line"><span>${city}</span><span class="n">${c}</span></div>`).join("")}
       </div>
@@ -199,10 +204,12 @@ function initLeafletMap() {
     attributionControl: true
   }).setView([24.6, 79.5], 5);
 
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-    subdomains: "abc",
-    maxZoom: 19
+  // Esri's free, key-less "World Street Map" — colorful terrain/roads/labels like
+  // classic OpenStreetMap, without OSM's own tile servers actively blocking this
+  // app under their tile usage policy (403 "Access blocked").
+  L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}", {
+    attribution: '&copy; <a href="https://www.esri.com">Esri</a>, HERE, Garmin, FAO, NOAA, USGS, OpenStreetMap contributors',
+    maxZoom: 18
   }).addTo(leafletMap);
 
   markerLayer = L.layerGroup().addTo(leafletMap);

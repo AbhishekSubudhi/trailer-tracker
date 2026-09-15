@@ -20,15 +20,18 @@ let state = {
   page: 1
 };
 
-const TIME_COLUMNS = [
+const PRIORITY_TIME_COLUMNS = [
+  { key: "availableTime", label: "Available Time (h)" },
+  { key: "productiveTime", label: "Productive Time (h)" }
+];
+
+const REST_TIME_COLUMNS = [
   { key: "movingTime", label: "Moving Time (h)" },
   { key: "loadingTime", label: "Loading Time (h)" },
   { key: "unloadingTime", label: "Unloading Time (h)" },
   { key: "idleTime", label: "Idle Time (h)" },
   { key: "emptyMovement", label: "Empty Movement (h)" },
-  { key: "maintenanceTime", label: "Maintenance (h)" },
-  { key: "availableTime", label: "Available Time (h)" },
-  { key: "productiveTime", label: "Productive Time (h)" }
+  { key: "maintenanceTime", label: "Maintenance (h)" }
 ];
 
 const COLUMNS = [
@@ -36,8 +39,9 @@ const COLUMNS = [
   { key: "type", label: "Type", sortable: true },
   { key: "size", label: "Size", sortable: true },
   { key: "location", label: "Current Locn.", sortable: true },
-  ...TIME_COLUMNS.map(c => ({ ...c, sortable: true })),
-  { key: "utilization", label: "Utilization", sortable: true }
+  { key: "utilization", label: "Utilization", sortable: true },
+  ...PRIORITY_TIME_COLUMNS.map(c => ({ ...c, sortable: true })),
+  ...REST_TIME_COLUMNS.map(c => ({ ...c, sortable: true }))
 ];
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -290,8 +294,9 @@ function render() {
         <td>${u.type}</td>
         <td>${u.size}</td>
         <td>${u.location}</td>
-        ${TIME_COLUMNS.map(c => `<td>${fmtNum(scale(u[c.key]))}</td>`).join("")}
         <td><span class="delay-tag ${tone.cls}">${Math.round(u.utilization * 1000) / 10}%</span></td>
+        ${PRIORITY_TIME_COLUMNS.map(c => `<td>${fmtNum(scale(u[c.key]))}</td>`).join("")}
+        ${REST_TIME_COLUMNS.map(c => `<td>${fmtNum(scale(u[c.key]))}</td>`).join("")}
       </tr>`;
     }).join("");
   }

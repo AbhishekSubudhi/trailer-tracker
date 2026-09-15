@@ -18,7 +18,7 @@
   <div class="page-header">
     <div>
       <h1 class="page-title">Orders View</h1>
-      <div class="page-sub">New order queue · AI-assisted trailer recommendations</div>
+      <div class="page-sub">New orders view- Trailer recommendation and allocation</div>
     </div>
     <div id="date-slicer"></div>
   </div>
@@ -37,10 +37,8 @@
       <select class="select" id="filter-destination">
         <option value="">All Destinations</option>
       </select>
-      <button class="chip-toggle" id="filter-review">Needs review only</button>
       <span class="spacer"></span>
       <button class="btn-reset" id="btn-reset">Reset filters</button>
-      <button class="btn-reset" id="btn-scoring-info" title="How recommendations are scored">How scoring works</button>
     </div>
 
     <div class="table-scroll">
@@ -58,16 +56,6 @@
     </div>
   </div>
 </main>
-</div>
-
-<div class="modal-backdrop" id="scoring-modal">
-  <div class="modal-card">
-    <div class="modal-header">
-      <div class="panel-title">How trailer recommendations are scored</div>
-      <button class="modal-close" id="scoring-modal-close">&times;</button>
-    </div>
-    <div class="modal-body" id="scoring-modal-body"></div>
-  </div>
 </div>
 
 <script src="assets/data.js"></script>

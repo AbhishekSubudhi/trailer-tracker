@@ -7,14 +7,14 @@ const COLUMNS = [
   { key: "type", label: "Type", sortable: true, width: 7 },
   { key: "size", label: "Size", sortable: true, width: 6 },
   { key: "capacity", label: "Capacity", sortable: true, width: 8 },
-  { key: "location", label: "Location", sortable: true, width: 9 },
+  { key: "orderId", label: "Order ID", sortable: false, width: 8 },
+  { key: "currentLoad", label: "Load (kg)", sortable: true, width: 8 },
   { key: "status", label: "Status", sortable: true, width: 8 },
   { key: "subStatus", label: "Sub Status", sortable: true, width: 10 },
-  { key: "currentLoad", label: "Load (kg)", sortable: true, width: 8 },
-  { key: "destination", label: "Destination", sortable: true, width: 8 },
-  { key: "orderId", label: "Order ID", sortable: false, width: 8 },
+  { key: "location", label: "Location", sortable: true, width: 9 },
   { key: "totalDelay", label: "Delay", sortable: true, width: 7 },
-  { key: "lastUpdated", label: "Updated", sortable: true, width: 10 }
+  { key: "lastUpdated", label: "Updated", sortable: true, width: 10 },
+  { key: "destination", label: "Destination", sortable: true, width: 8 }
 ];
 
 const PAGE_SIZE = 25;
@@ -183,14 +183,14 @@ function render() {
         <td>${t.type}</td>
         <td>${t.size}</td>
         <td title="${fmtNum(t.capacity)} kg">${fmtNum(t.capacity)}</td>
-        <td title="${t.location}">${t.location}</td>
+        <td title="${t.orderId || ""}">${t.orderId || "—"}</td>
+        <td>${t.currentLoad ? fmtNum(t.currentLoad) : "—"}</td>
         <td>${statusBadge(t.status)}</td>
         <td>${subStatusBadge(t.subStatus)}</td>
-        <td>${t.currentLoad ? fmtNum(t.currentLoad) : "—"}</td>
-        <td title="${t.destination === "NA" ? "" : t.destination}">${t.destination === "NA" ? "—" : t.destination}</td>
-        <td title="${t.orderId || ""}">${t.orderId || "—"}</td>
+        <td title="${t.location}">${t.location}</td>
         <td>${t.totalDelay > 0 ? `<span class="delay-tag ${t.totalDelay > 60 ? "delay-bad" : "delay-mid"}">${fmtDuration(t.totalDelay)}</span>` : `<span class="delay-tag delay-ok">On time</span>`}</td>
         <td title="${fmtDateTime(t.lastUpdated)}">${timeAgo(t.lastUpdated)}</td>
+        <td title="${t.destination === "NA" ? "" : t.destination}">${t.destination === "NA" ? "—" : t.destination}</td>
       </tr>`).join("");
   }
 

@@ -5,25 +5,11 @@
 const REVIEW_THRESHOLD = 80; // top-recommendation accuracy below this needs manual review
 const PAGE_SIZE = 25;
 
-const SCORING_LOGIC = [
-  { rule: "Candidate pool", detail: "Only trailers with Status = Available are considered." },
-  { rule: "Weight feasibility (hard rule)", detail: "Capacity − Current Load must be ≥ Order Weight." },
-  { rule: "Trailer type match", detail: "35% of score — exact type match scores 100; compatible substitutes score lower." },
-  { rule: "Capacity / order weight fit", detail: "30% — favors feasible trailers with efficient capacity utilization and a safety buffer." },
-  { rule: "Order volume fit", detail: "15% — size converted to a proxy volume (20ft=40, 32ft=60, 40ft=80, 45ft=90)." },
-  { rule: "Current trailer load impact", detail: "10% — a lower current-load ratio scores higher." },
-  { rule: "Order priority", detail: "5% — P1 = 100, P2 = 80, P3 = 60." },
-  { rule: "Readiness / recency", detail: "5% — Inspection Done and a more recent last-updated time score higher." },
-  { rule: "Type substitution", detail: "Dry Van prefers Reefer, and Container prefers Flatbed, when no exact-type trailer is available." },
-  { rule: "Accuracy display", detail: "Top 3 candidates are ranked independently and shown to 1 decimal place." }
-];
-
 let state = {
   search: "",
   type: "",
   destination: "",
   priority: "",
-  reviewOnly: false,
   dateFrom: null,
   dateTo: null,
   datePreset: "all",
@@ -48,7 +34,6 @@ document.addEventListener("DOMContentLoaded", () => {
   buildFilterOptions();
   renderDateSlicer();
   bindControls();
-  bindScoringModal();
   render();
 });
 
@@ -64,6 +49,140 @@ function topAccuracy(orderId) {
 function needsReview(order) {
   const acc = topAccuracy(order.id);
   return acc === null || acc < REVIEW_THRESHOLD;
+}
+
+// -------------------- Trailer assignment (choose one of the 3 recommendations) --------------------
+const ASSIGNMENT_STORAGE_KEY = "fleetview_order_assignments";
+
+function loadAssignments() {
+  try { return JSON.parse(localStorage.getItem(ASSIGNMENT_STORAGE_KEY)) || {}; } catch (e) { return {}; }
+}
+function saveAssignments(map) {
+  try { localStorage.setItem(ASSIGNMENT_STORAGE_KEY, JSON.stringify(map)); } catch (e) {}
+}
+let assignments = loadAssignments();
+
+function getAssignment(orderId) {
+  return assignments[orderId] || null;
+}
+function setAssignment(orderId, trailerId) {
+  if (trailerId) assignments[orderId] = trailerId;
+  else delete assignments[orderId];
+  saveAssignments(assignments);
+}
+
+// -------------------- Toast feedback --------------------
+function showToast(message, tone) {
+  const colors = { good: "#158a4c", mid: "#a5670a", low: "#c22a2a", info: "var(--accent-dark)" };
+  let host = document.getElementById("toast-host");
+  if (!host) {
+    host = document.createElement("div");
+    host.id = "toast-host";
+    document.body.appendChild(host);
+  }
+  const toast = document.createElement("div");
+  toast.className = "toast";
+  toast.style.borderLeftColor = colors[tone] || colors.info;
+  toast.innerHTML = message;
+  host.appendChild(toast);
+  requestAnimationFrame(() => toast.classList.add("show"));
+  setTimeout(() => {
+    toast.classList.remove("show");
+    setTimeout(() => toast.remove(), 250);
+  }, 3200);
+}
+
+// -------------------- Trailer picker (custom popover, not a native <select>) --------------------
+const RANK_LABELS = ["Top pick", "2nd pick", "3rd pick"];
+let activePickerOrder = null;
+
+function recTone(accuracy) {
+  return accuracy >= 90 ? "rec-high" : accuracy >= REVIEW_THRESHOLD ? "rec-mid" : "rec-low";
+}
+
+function ensurePicker() {
+  let pop = document.getElementById("trailer-picker");
+  if (pop) return pop;
+  pop = document.createElement("div");
+  pop.id = "trailer-picker";
+  pop.className = "trailer-picker";
+  pop.hidden = true;
+  document.body.appendChild(pop);
+
+  document.addEventListener("click", (e) => {
+    if (!pop.hidden && !pop.contains(e.target) && !e.target.closest(".trailer-pick-btn")) closePicker();
+  });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closePicker(); });
+  window.addEventListener("resize", closePicker);
+  document.addEventListener("scroll", (e) => {
+    if (!pop.hidden && e.target !== pop && !pop.contains(e.target)) closePicker();
+  }, true);
+
+  return pop;
+}
+
+function closePicker() {
+  const pop = document.getElementById("trailer-picker");
+  if (pop) pop.hidden = true;
+  activePickerOrder = null;
+}
+
+function openPicker(btn, orderId) {
+  const pop = ensurePicker();
+  if (activePickerOrder === orderId && !pop.hidden) { closePicker(); return; }
+
+  const recs = getRecs(orderId);
+  const chosen = getAssignment(orderId);
+  activePickerOrder = orderId;
+
+  pop.innerHTML = `
+    <div class="tp-label">AI-recommended for ${orderId}</div>
+    ${recs.map((r, i) => `
+      <button type="button" class="tp-row ${r.trailerId === chosen ? "selected" : ""}" data-trailer="${r.trailerId}">
+        <span class="tp-row-main">
+          <span class="tp-row-id">${r.trailerId === chosen ? "✓ " : ""}${r.trailerId}</span>
+          <span class="tp-row-rank">${RANK_LABELS[i] || `Pick ${i + 1}`}</span>
+        </span>
+        <span class="tp-row-acc ${recTone(r.accuracy)}">${r.accuracy}%</span>
+      </button>`).join("")}
+    ${chosen ? `<div class="tp-clear"><button type="button" data-clear="1">Clear assignment</button></div>` : ""}
+  `;
+
+  pop.querySelectorAll(".tp-row").forEach(row => {
+    row.addEventListener("click", (e) => {
+      e.stopPropagation();
+      chooseTrailer(orderId, row.dataset.trailer);
+      closePicker();
+    });
+  });
+  const clearBtn = pop.querySelector("[data-clear]");
+  if (clearBtn) clearBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    chooseTrailer(orderId, null);
+    closePicker();
+  });
+
+  pop.hidden = false;
+  const rect = btn.getBoundingClientRect();
+  const popRect = pop.getBoundingClientRect();
+  let top = rect.bottom + 6;
+  let left = rect.left;
+  if (left + popRect.width > window.innerWidth - 12) left = Math.max(12, window.innerWidth - popRect.width - 12);
+  if (top + popRect.height > window.innerHeight - 12) top = rect.top - popRect.height - 6;
+  pop.style.top = `${top}px`;
+  pop.style.left = `${left}px`;
+}
+
+function chooseTrailer(orderId, trailerId) {
+  setAssignment(orderId, trailerId);
+  if (trailerId) {
+    const rec = getRecs(orderId).find(r => r.trailerId === trailerId);
+    const tone = rec.accuracy >= 90 ? "good" : rec.accuracy >= REVIEW_THRESHOLD ? "mid" : "low";
+    showToast(`<b>${trailerId}</b> assigned to <b>${orderId}</b> — ${rec.accuracy}% match`, tone);
+  } else {
+    showToast(`Assignment cleared for <b>${orderId}</b>`, "info");
+  }
+  render();
 }
 
 // -------------------- Date/time slicer --------------------
@@ -242,41 +361,17 @@ function bindControls() {
   document.getElementById("filter-destination").addEventListener("change", (e) => {
     state.destination = e.target.value; state.page = 1; render();
   });
-  document.getElementById("filter-review").addEventListener("click", (e) => {
-    state.reviewOnly = !state.reviewOnly;
-    e.target.classList.toggle("active", state.reviewOnly);
-    state.page = 1; render();
-  });
   document.getElementById("btn-reset").addEventListener("click", () => {
-    state = { search: "", type: "", destination: "", priority: "", reviewOnly: false, dateFrom: null, dateTo: null, datePreset: "all", sortKey: "createdAt", sortDir: "desc", page: 1 };
+    state = { search: "", type: "", destination: "", priority: "", dateFrom: null, dateTo: null, datePreset: "all", sortKey: "createdAt", sortDir: "desc", page: 1 };
     document.getElementById("search-input").value = "";
     document.getElementById("filter-type").value = "";
     document.getElementById("filter-destination").value = "";
-    document.getElementById("filter-review").classList.remove("active");
     document.getElementById("date-slicer-label").textContent = "All time";
     document.querySelectorAll(".dsp-presets button").forEach(b => b.classList.toggle("active", b.dataset.preset === "all"));
     document.getElementById("date-from").value = "";
     document.getElementById("date-to").value = "";
     render();
   });
-}
-
-function bindScoringModal() {
-  const modal = document.getElementById("scoring-modal");
-  const body = document.getElementById("scoring-modal-body");
-  body.innerHTML = `
-    <div class="kv-list">
-      ${SCORING_LOGIC.map(s => `
-        <div class="kv-row" style="align-items:flex-start">
-          <span class="k" style="white-space:normal;max-width:170px">${s.rule}</span>
-          <span class="v" style="font-weight:500;text-align:left;max-width:340px">${s.detail}</span>
-        </div>`).join("")}
-    </div>
-    <div style="margin-top:12px;font-size:11px;color:var(--text-faint)">Candidates are limited to trailers currently marked Available in the Noida yard.</div>
-  `;
-  document.getElementById("btn-scoring-info").addEventListener("click", () => modal.classList.add("show"));
-  document.getElementById("scoring-modal-close").addEventListener("click", () => modal.classList.remove("show"));
-  modal.addEventListener("click", (e) => { if (e.target === modal) modal.classList.remove("show"); });
 }
 
 // -------------------- Filtering / sorting / rendering --------------------
@@ -295,7 +390,6 @@ function getFiltered() {
     if (state.type && o.type !== state.type) return false;
     if (state.destination && o.destination !== state.destination) return false;
     if (state.priority && o.priority !== state.priority) return false;
-    if (state.reviewOnly && !needsReview(o)) return false;
     if (q && !o.id.toLowerCase().includes(q)) return false;
     return true;
   });
@@ -323,10 +417,23 @@ function priorityBadge(p) {
 function recommendationCell(orderId) {
   const recs = getRecs(orderId);
   if (recs.length === 0) return `<span style="color:var(--text-faint)">No match available</span>`;
-  return `<div class="rec-chips">` + recs.map((r, i) => {
-    const tone = r.accuracy >= 90 ? "rec-high" : r.accuracy >= REVIEW_THRESHOLD ? "rec-mid" : "rec-low";
-    return `<a class="rec-chip ${tone}" href="trailer.html?id=${r.trailerId}" title="Rank ${i + 1} match">${r.trailerId} <b>${r.accuracy}%</b></a>`;
-  }).join("") + `</div>`;
+  const chosen = getAssignment(orderId);
+  const chosenRec = recs.find(r => r.trailerId === chosen);
+  const tone = chosenRec ? recTone(chosenRec.accuracy) : "";
+
+  return `<button type="button" class="trailer-pick-btn ${chosenRec ? "assigned " + tone : ""}" data-order="${orderId}">
+    <span class="tpb-text">${chosenRec ? `✓ ${chosenRec.trailerId} <b>${chosenRec.accuracy}%</b>` : "Choose trailer"}</span>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+  </button>`;
+}
+
+function bindRecommendationClicks(tbody) {
+  tbody.querySelectorAll(".trailer-pick-btn").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      openPicker(btn, btn.dataset.order);
+    });
+  });
 }
 
 function render() {
@@ -360,6 +467,7 @@ function render() {
         <td>${priorityBadge(o.priority)}</td>
         <td>${recommendationCell(o.id)}</td>
       </tr>`).join("");
+    bindRecommendationClicks(tbody);
   }
 
   renderPagination(totalPages, sorted.length, start, pageItems.length);
