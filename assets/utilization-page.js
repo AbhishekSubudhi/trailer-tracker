@@ -150,22 +150,22 @@ function renderKpiRow() {
   const cards = [
     {
       label: "Overall Utilization", icon: "activity",
-      value: `${overall}%`, color: overall >= 90 ? "#158a4c" : overall >= 85 ? "#a5670a" : "#c22a2a",
+      value: `${overall}%`, color: overall >= 90 ? "#0f9e8e" : overall >= 85 ? "#b97400" : "#e5484d",
       sub: `Across all ${list.length} trailers`
     },
     {
       label: `Underutilized (< ${Math.round(UNDERUTIL_THRESHOLD * 100)}%)`, icon: "alert-triangle",
-      value: underCount, color: "#c22a2a",
+      value: underCount, color: "#e5484d",
       sub: `${Math.round((underCount / n) * 100)}% of fleet`
     },
     {
       label: "Avg. Productive Time", icon: "zap",
-      value: `${fmtNum(Math.round(avgProductive * 10) / 10)} h`, color: "#6d5df6",
+      value: `${fmtNum(Math.round(avgProductive * 10) / 10)} h`, color: "#5b8def",
       sub: `Total: ${fmtNum(Math.round(totalProductive))} h (${state.rangeLabel})`
     },
     {
       label: "Avg. Available Time", icon: "clock",
-      value: `${fmtNum(Math.round(avgAvailable * 10) / 10)} h`, color: "#2f7de1",
+      value: `${fmtNum(Math.round(avgAvailable * 10) / 10)} h`, color: "#14b8a6",
       sub: `Total: ${fmtNum(Math.round(totalAvailable))} h (${state.rangeLabel})`
     }
   ];
@@ -261,9 +261,9 @@ function getSorted(list) {
 }
 
 function utilTone(u) {
-  if (u >= 0.9) return { cls: "delay-ok", color: "#158a4c" };
-  if (u >= UNDERUTIL_THRESHOLD) return { cls: "delay-mid", color: "#a5670a" };
-  return { cls: "delay-bad", color: "#c22a2a" };
+  if (u >= 0.9) return { cls: "delay-ok", color: "#0f9e8e" };
+  if (u >= UNDERUTIL_THRESHOLD) return { cls: "delay-mid", color: "#b97400" };
+  return { cls: "delay-bad", color: "#e5484d" };
 }
 
 function render() {

@@ -1,4 +1,4 @@
-﻿// Auto-generated from Trailer_Utilization_1_Month.xlsx
+// Auto-generated from Trailer_Utilization_1_Month.xlsx
 // All time fields are HOURS accumulated over the trailing 1-month window ending at NOW_ANCHOR.
 const UTILIZATION = [
 {"id":"TRL200002","type":"Flatbed","size":"40 ft","location":"Noida","movingTime":140,"loadingTime":25,"unloadingTime":20,"idleTime":15,"emptyMovement":8,"maintenanceTime":4,"availableTime":212,"productiveTime":197,"utilization":0.929},

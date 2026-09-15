@@ -56,7 +56,7 @@ function onTimeStatus(trailer) {
   const severe = trailer.subStatus === "Exception" || trailer.totalDelay > 120;
   return {
     label: `Delayed · ${fmtDuration(trailer.totalDelay)}`,
-    color: severe ? "#c22a2a" : "#a5670a",
+    color: severe ? "#e5484d" : "#b97400",
     bg: severe ? "#fde8e8" : "#fef3d9"
   };
 }
@@ -202,7 +202,7 @@ function initRouteMap(trailer) {
   const map = L.map("route-map", { zoomControl: false, attributionControl: false, dragging: false, scrollWheelZoom: false, doubleClickZoom: false, boxZoom: false, touchZoom: false });
   L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}", { maxZoom: 18 }).addTo(map);
 
-  const originIcon = L.divIcon({ className: "", html: `<div class="trailer-badge" style="width:16px;height:16px;background:#1e2033;border-width:2px"></div>`, iconSize: [16, 16], iconAnchor: [8, 8] });
+  const originIcon = L.divIcon({ className: "", html: `<div class="trailer-badge" style="width:16px;height:16px;background:#101214;border-width:2px"></div>`, iconSize: [16, 16], iconAnchor: [8, 8] });
   const destIcon = L.divIcon({ className: "", html: `<div class="trailer-badge" style="width:16px;height:16px;background:${STATUS_COLOR[trailer.status]};border-width:2px"></div>`, iconSize: [16, 16], iconAnchor: [8, 8] });
 
   L.marker(origin, { icon: originIcon }).addTo(map).bindTooltip("Noida Yard", { permanent: false });

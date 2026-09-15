@@ -7,9 +7,9 @@ const CRITICAL_THRESHOLD_MIN = 300; // 5h+
 const HANDLING_STORAGE_KEY = "fleetview_exception_handling";
 
 const HANDLING_META = {
-  open: { label: "Open", color: "#c22a2a", bg: "#fde8e8" },
-  investigating: { label: "Investigating", color: "#a5670a", bg: "#fef3d9" },
-  resolved: { label: "Resolved", color: "#158a4c", bg: "#e3f9ea" }
+  open: { label: "Open", color: "#e5484d", bg: "#fde8e8" },
+  investigating: { label: "Investigating", color: "#b97400", bg: "#fef3d9" },
+  resolved: { label: "Resolved", color: "#0f9e8e", bg: "#e3f9ea" }
 };
 
 function loadHandling() {
@@ -72,10 +72,10 @@ function renderKpiRow() {
   const openCount = EXCEPTIONS.filter(e => getHandling(e.id) === "open").length;
 
   const cards = [
-    { label: "Total Exceptions", icon: "alert-triangle", value: total, color: "#c22a2a", sub: "Currently flagged fleet-wide" },
-    { label: `Critical (≥ ${fmtDuration(CRITICAL_THRESHOLD_MIN)})`, icon: "zap", value: critical, color: "#c22a2a", sub: `${total ? Math.round((critical / total) * 100) : 0}% of exceptions` },
-    { label: "Avg. Delay", icon: "clock", value: fmtDuration(avgDelay), color: "#a5670a", sub: "Across all exceptions" },
-    { label: "Still Open", icon: "flag", value: openCount, color: "#6d5df6", sub: `${total - openCount} being worked or resolved` }
+    { label: "Total Exceptions", icon: "alert-triangle", value: total, color: "#e5484d", sub: "Currently flagged fleet-wide" },
+    { label: `Critical (≥ ${fmtDuration(CRITICAL_THRESHOLD_MIN)})`, icon: "zap", value: critical, color: "#e5484d", sub: `${total ? Math.round((critical / total) * 100) : 0}% of exceptions` },
+    { label: "Avg. Delay", icon: "clock", value: fmtDuration(avgDelay), color: "#b97400", sub: "Across all exceptions" },
+    { label: "Still Open", icon: "flag", value: openCount, color: "#5b8def", sub: `${total - openCount} being worked or resolved` }
   ];
 
   row.innerHTML = cards.map(c => `

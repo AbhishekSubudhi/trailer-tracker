@@ -3,24 +3,24 @@
 // ---------------------------------------------------------------------------
 
 const STATUS_COLOR = {
-  "Available": "#2f7de1",
-  "Assigned": "#e08c1a",
-  "In-Transit": "#8b5cf6"
+  "Available": "#14b8a6",
+  "Assigned": "#f5a623",
+  "In-Transit": "#5b8def"
 };
 
 const SUBSTATUS_COLOR = {
-  "Inspection Pending": "#9799b3",
-  "Inspection Done": "#2f7de1",
-  "Loading": "#e08c1a",
-  "Dispatch": "#e08c1a",
-  "Unloading": "#e08c1a",
-  "Trailer Released": "#0e9c8f",
-  "Return": "#0e9c8f",
-  "Reposition": "#0e9c8f",
-  "Arrived Destination": "#0e9c8f",
-  "On Time": "#16a34a",
-  "Delayed": "#e0791a",
-  "Exception": "#dc2626"
+  "Inspection Pending": "#a3a8b3",
+  "Inspection Done": "#14b8a6",
+  "Loading": "#f5a623",
+  "Dispatch": "#f5a623",
+  "Unloading": "#f5a623",
+  "Trailer Released": "#5b8def",
+  "Return": "#5b8def",
+  "Reposition": "#5b8def",
+  "Arrived Destination": "#5b8def",
+  "On Time": "#14b8a6",
+  "Delayed": "#b97400",
+  "Exception": "#e5484d"
 };
 
 const STATUS_ORDER = ["Available", "Assigned", "In-Transit"];
@@ -112,13 +112,13 @@ function fmtNum(n) {
 }
 
 function statusBadge(status, subStatus) {
-  const color = STATUS_COLOR[status] || "#64748b";
+  const color = STATUS_COLOR[status] || "#70757e";
   return (status ? `<span class="badge" style="background:${color}1a;color:${color};border-color:${color}40">${status}</span>` : "") +
-    (subStatus ? `<span class="badge badge-sub" style="background:${(SUBSTATUS_COLOR[subStatus] || "#64748b")}1a;color:${SUBSTATUS_COLOR[subStatus] || "#64748b"};border-color:${(SUBSTATUS_COLOR[subStatus] || "#64748b")}40">${subStatus}</span>` : "");
+    (subStatus ? `<span class="badge badge-sub" style="background:${(SUBSTATUS_COLOR[subStatus] || "#70757e")}1a;color:${SUBSTATUS_COLOR[subStatus] || "#70757e"};border-color:${(SUBSTATUS_COLOR[subStatus] || "#70757e")}40">${subStatus}</span>` : "");
 }
 
 function subStatusBadge(subStatus) {
-  const color = SUBSTATUS_COLOR[subStatus] || "#64748b";
+  const color = SUBSTATUS_COLOR[subStatus] || "#70757e";
   return `<span class="badge" style="background:${color}1a;color:${color};border-color:${color}40">${subStatus}</span>`;
 }
 

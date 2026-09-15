@@ -73,7 +73,7 @@ function setAssignment(orderId, trailerId) {
 
 // -------------------- Toast feedback --------------------
 function showToast(message, tone) {
-  const colors = { good: "#158a4c", mid: "#a5670a", low: "#c22a2a", info: "var(--accent-dark)" };
+  const colors = { good: "#0f9e8e", mid: "#b97400", low: "#e5484d", info: "var(--accent-dark)" };
   let host = document.getElementById("toast-host");
   if (!host) {
     host = document.createElement("div");
@@ -282,12 +282,12 @@ function renderKpiRow() {
   const available = TRAILERS.filter(t => t.status === "Available").length;
   const byPriority = { P1: 0, P2: 0, P3: 0 };
   inRange.forEach(o => byPriority[o.priority]++);
-  const priorityColors = { P1: "#dc2626", P2: "#e08c1a", P3: "#16a34a" };
+  const priorityColors = { P1: "#e5484d", P2: "#f5a623", P3: "#14b8a6" };
   const priorityLabels = { P1: "P1 · Urgent", P2: "P2 · Standard", P3: "P3 · Flexible" };
 
   const cards = [
-    { key: "available", label: "Available Trailers", value: available, color: "#2f7de1", icon: "check-circle", clickable: "link" },
-    { key: "all", label: "New Orders", value: inRange.length, color: "#6d5df6", icon: "package", clickable: "filter" },
+    { key: "available", label: "Available Trailers", value: available, color: "#14b8a6", icon: "check-circle", clickable: "link" },
+    { key: "all", label: "New Orders", value: inRange.length, color: "#5b8def", icon: "package", clickable: "filter" },
     { key: "P1", label: priorityLabels.P1, value: byPriority.P1, color: priorityColors.P1, icon: "flag", clickable: "filter" },
     { key: "P2", label: priorityLabels.P2, value: byPriority.P2, color: priorityColors.P2, icon: "flag", clickable: "filter" },
     { key: "P3", label: priorityLabels.P3, value: byPriority.P3, color: priorityColors.P3, icon: "flag", clickable: "filter" }
@@ -409,8 +409,8 @@ function getSorted(list) {
 }
 
 function priorityBadge(p) {
-  const colors = { P1: "#dc2626", P2: "#e08c1a", P3: "#16a34a" };
-  const c = colors[p] || "#64748b";
+  const colors = { P1: "#e5484d", P2: "#f5a623", P3: "#14b8a6" };
+  const c = colors[p] || "#70757e";
   return `<span class="badge" style="background:${c}1a;color:${c};border-color:${c}40">${p}</span>`;
 }
 
@@ -458,7 +458,7 @@ function render() {
   } else {
     tbody.innerHTML = pageItems.map(o => `
       <tr class="${needsReview(o) ? "row-flag" : ""}">
-        <td><span style="font-weight:700">${o.id}</span>${needsReview(o) ? '<span class="badge" style="background:#fde8e8;color:#c22a2a;border-color:#f8c6c6;margin-left:6px">Review</span>' : ""}</td>
+        <td><span style="font-weight:700">${o.id}</span>${needsReview(o) ? '<span class="badge" style="background:#fde8e8;color:#e5484d;border-color:#f8c6c6;margin-left:6px">Review</span>' : ""}</td>
         <td title="${fmtDateTime(o.createdAt)}">${timeAgo(o.createdAt)}</td>
         <td>${o.type}</td>
         <td>${fmtNum(o.weight)}</td>

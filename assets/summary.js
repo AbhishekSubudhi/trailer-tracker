@@ -124,8 +124,8 @@ function renderOrderSummary() {
       <a href="orders.html" class="link" style="font-size:12px">View all →</a>
     </div>
     <div class="panel-body">
-      <div class="stat-line"><span>Urgent (P1)</span><span class="n" style="color:#c22a2a">${fmtNum(byPriority.P1 || 0)}</span></div>
-      ${needsReview !== null ? `<div class="stat-line"><span>Needs manual review</span><span class="n" style="color:#a5670a">${fmtNum(needsReview)}</span></div>` : ""}
+      <div class="stat-line"><span>Urgent (P1)</span><span class="n" style="color:#e5484d">${fmtNum(byPriority.P1 || 0)}</span></div>
+      ${needsReview !== null ? `<div class="stat-line"><span>Needs manual review</span><span class="n" style="color:#b97400">${fmtNum(needsReview)}</span></div>` : ""}
       <div class="stat-line"><span>Total weight (pool)</span><span class="n">${fmtNum(totalWeight)} kg</span></div>
       <div class="stat-line"><span>Avg. distance</span><span class="n">${fmtNum(avgDistance)} km</span></div>
       <div class="stat-line"><span>Unique destinations</span><span class="n">${Object.keys(byDest).length}</span></div>
@@ -256,9 +256,9 @@ function drawMapMarkers() {
     const sample = trailersAtCity.slice(0, 6);
     const more = n - sample.length;
     const popupHtml = `
-      <div class="map-popup-title">${city} <span style="color:#64748b;font-weight:600">· ${n} trailer${n !== 1 ? "s" : ""}</span></div>
+      <div class="map-popup-title">${city} <span style="color:#70757e;font-weight:600">· ${n} trailer${n !== 1 ? "s" : ""}</span></div>
       <div class="map-popup-list">
-        ${sample.map(t => `<a href="trailer.html?id=${t.id}">${t.id} <span style="color:#94a3b8">— ${t.status} · ${t.subStatus}</span></a>`).join("")}
+        ${sample.map(t => `<a href="trailer.html?id=${t.id}">${t.id} <span style="color:#a3a8b3">— ${t.status} · ${t.subStatus}</span></a>`).join("")}
       </div>
       ${more > 0 ? `<div class="map-popup-more">+${more} more at this location</div>` : ""}
     `;
@@ -272,7 +272,7 @@ function dominantStatusColor(list) {
   list.forEach(t => { counts[t.status] = (counts[t.status] || 0) + 1; });
   let best = null, bestN = -1;
   Object.entries(counts).forEach(([status, n]) => { if (n > bestN) { best = status; bestN = n; } });
-  return STATUS_COLOR[best] || "#64748b";
+  return STATUS_COLOR[best] || "#70757e";
 }
 
 // -------------------- Delayed / exception trailers panel --------------------
@@ -312,7 +312,7 @@ function renderFleetMixPanel() {
   const byType = countBy(TRAILERS, t => t.type);
   const bySize = countBy(TRAILERS, t => t.size);
   const total = TRAILERS.length;
-  const typeColors = { Flatbed: "#2f7de1", Reefer: "#0e9c8f", Container: "#8b5cf6", "Dry Van": "#e08c1a" };
+  const typeColors = { Flatbed: "#14b8a6", Reefer: "#5b8def", Container: "#5b8def", "Dry Van": "#f5a623" };
 
   panel.innerHTML = `
     <div class="panel-title-row">
@@ -336,7 +336,7 @@ function renderFleetMixPanel() {
           const pct = Math.round((c / total) * 100);
           return `<div class="mini-bar-row">
             <div class="mini-bar-label"><span>${size}</span><span>${c} (${pct}%)</span></div>
-            <div class="mini-bar-track"><div class="mini-bar-fill" style="width:${pct}%;background:#8a8ca6"></div></div>
+            <div class="mini-bar-track"><div class="mini-bar-fill" style="width:${pct}%;background:#70757e"></div></div>
           </div>`;
         }).join("")}
       </div>
@@ -361,10 +361,10 @@ function renderPerformancePanel() {
   );
 
   const rows = [
-    { label: "On-time in-transit", value: `${onTimePct}%`, color: onTimePct >= 60 ? "#158a4c" : "#c22a2a" },
-    { label: "Avg. delay (delayed trailers)", value: fmtDuration(avgDelay), color: "#a5670a" },
-    { label: "Active exceptions", value: exceptions, color: "#c22a2a" },
-    { label: "Avg. load utilization", value: `${avgUtil}%`, color: "#5647e0" }
+    { label: "On-time in-transit", value: `${onTimePct}%`, color: onTimePct >= 60 ? "#0f9e8e" : "#e5484d" },
+    { label: "Avg. delay (delayed trailers)", value: fmtDuration(avgDelay), color: "#b97400" },
+    { label: "Active exceptions", value: exceptions, color: "#e5484d" },
+    { label: "Avg. load utilization", value: `${avgUtil}%`, color: "#3f6fd8" }
   ];
 
   panel.innerHTML = `
